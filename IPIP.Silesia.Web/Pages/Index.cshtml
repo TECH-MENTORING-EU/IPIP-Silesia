@@ -1,10 +1,128 @@
 ﻿@page
 @model IndexModel
 @{
-    ViewData["Title"] = "Home page";
+    ViewData["Title"] = "Start";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-7">
+                <span class="eyebrow">Ścieżka od matury do pierwszej pracy</span>
+                <h1 class="display-3 fw-bold mt-3">Jasna recepta, jak wejść na rodzimy rynek pracy bez chaosu.</h1>
+                <p class="lead text-secondary mt-4">
+                    IPIP Silesia to szkic platformy, która łączy edukację, ludzi i konkretne oferty pracy fizycznej.
+                    Zbieramy programy szkoleniowe, projekty kompetencyjne, networking i ścieżkę „z projektu do pracy”.
+                </p>
+                <div class="d-flex flex-column flex-sm-row gap-3 mt-4">
+                    <a class="btn btn-accent btn-lg" asp-page="/Programs">Przeglądaj programy</a>
+                    <a class="btn btn-outline-light btn-lg" asp-page="/Jobs">Zobacz oferty pracy</a>
+                </div>
+                <div class="hero-stats mt-5">
+                    <div>
+                        <strong>12+</strong>
+                        <span>mockupowych ścieżek wejścia</span>
+                    </div>
+                    <div>
+                        <strong>3 filary</strong>
+                        <span>edukacja, relacje, zatrudnienie</span>
+                    </div>
+                    <div>
+                        <strong>lokalnie</strong>
+                        <span>Śląsk i miasta ościenne</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="glass-card hero-card">
+                    <p class="card-kicker">Motyw przewodni</p>
+                    <h2>Najpierw orientacja i kompetencje. Potem ludzie. Na końcu oferta dopasowana do realiów regionu.</h2>
+                    <ul class="feature-list">
+                        <li>krótkie szkolenia z realnym efektem</li>
+                        <li>projekty uczące współpracy i odpowiedzialności</li>
+                        <li>spotkania z mentorami i pracodawcami</li>
+                        <li>fizyczne oferty pracy oraz ścieżka wdrożeniowa</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-spacing">
+    <div class="container">
+        <div class="section-heading">
+            <span class="eyebrow">Co znajdziesz na stronie</span>
+            <h2>Prosty szkielet pod dalszy rozwój produktu</h2>
+        </div>
+        <div class="row g-4 mt-1">
+            <div class="col-md-6 col-xl-3">
+                <article class="info-card h-100">
+                    <p class="card-kicker">01</p>
+                    <h3>Landing page</h3>
+                    <p>Wyraźny cel projektu, przewodnik „co zrobić po maturze” i szybkie wejście do kluczowych sekcji.</p>
+                </article>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <article class="info-card h-100">
+                    <p class="card-kicker">02</p>
+                    <h3>Repozytorium programów</h3>
+                    <p>Programy szkoleniowe i kompetencyjne opisane jak katalog działań do uruchomienia.</p>
+                </article>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <article class="info-card h-100">
+                    <p class="card-kicker">03</p>
+                    <h3>Networking</h3>
+                    <p>Formaty spotkań, społeczność, kontakt z mentorami i miejsca do poznawania ludzi z branży.</p>
+                </article>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <article class="info-card h-100">
+                    <p class="card-kicker">04</p>
+                    <h3>Praca</h3>
+                    <p>Fizyczne oferty pracy i scenariusz przejścia od praktycznego projektu do zatrudnienia.</p>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="section-spacing section-soft">
+    <div class="container">
+        <div class="section-heading">
+            <span class="eyebrow">React widget</span>
+            <h2>Roadmapa „po maturze” do dalszego rozwijania</h2>
+            <p>Interaktywna sekcja pokazuje, gdzie React może wspierać dynamiczny content w aplikacji Razor Pages.</p>
+        </div>
+        <div id="landing-roadmap-root"></div>
+    </div>
+</section>
+
+<section class="section-spacing">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <article class="info-card h-100">
+                    <p class="card-kicker">Programy szkoleniowe</p>
+                    <h3>Krótki start operacyjny</h3>
+                    <p>Obsługa procesów, bezpieczeństwo, podstawy logistyki, techniki pracy i komunikacja na zmianie.</p>
+                </article>
+            </div>
+            <div class="col-lg-4">
+                <article class="info-card h-100">
+                    <p class="card-kicker">Programy kompetencyjne</p>
+                    <h3>Rozwój miękkich kompetencji</h3>
+                    <p>Praca zespołowa, odpowiedzialność, punktualność, współpraca z brygadzistą i czytanie prostych instrukcji.</p>
+                </article>
+            </div>
+            <div class="col-lg-4">
+                <article class="info-card h-100">
+                    <p class="card-kicker">Z projektu do pracy</p>
+                    <h3>Praktyka z realnym rezultatem</h3>
+                    <p>Mini-projekty symulujące pierwsze zadania w pracy fizycznej i budujące gotowość do wejścia na zmianę.</p>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>

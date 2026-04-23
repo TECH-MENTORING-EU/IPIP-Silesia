@@ -1,0 +1,17 @@
+{
+  "name": "ipip.silesia.web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "esbuild Frontend/main.jsx --bundle --format=iife --outfile=wwwroot/dist/app.js --loader:.js=jsx --minify",
+    "build:dev": "esbuild Frontend/main.jsx --bundle --format=iife --outfile=wwwroot/dist/app.js --loader:.js=jsx --sourcemap",
+    "watch": "npm run build:dev -- --watch"
+  },
+  "description": "Frontend React widgets for the IPIP Silesia Razor Pages application.",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "esbuild": "^0.28.0",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
+  }
+}

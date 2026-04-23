@@ -6,4 +6,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <Target Name="BuildFrontend" BeforeTargets="Build" Condition="Exists('package.json')">
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Command="npm ci" Condition="!Exists('node_modules')" />
+    <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Command="npm run build" />
+  </Target>
+
 </Project>
