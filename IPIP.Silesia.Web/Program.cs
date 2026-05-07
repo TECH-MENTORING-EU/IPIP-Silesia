@@ -1,10 +1,12 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.RateLimiting;
 using IPIP.Silesia.Web.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -27,13 +29,26 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/";
     });
 builder.Services.AddAuthorization();
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("PkceChallengeLimiter", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = 20;
+        limiterOptions.Window = TimeSpan.FromMinutes(1);
+        limiterOptions.QueueLimit = 0;
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+    });
+});
 
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    dbContext.Database.EnsureCreated();
+    if (app.Environment.IsDevelopment())
+    {
+        dbContext.Database.EnsureCreated();
+    }
 }
 
 if (!app.Environment.IsDevelopment())
@@ -44,6 +59,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -59,7 +75,7 @@ authGroup.MapPost("/pkce/challenge", (PkceChallengeRequest request, IMemoryCache
     var challengeToken = Guid.NewGuid().ToString("N");
     cache.Set($"pkce:{challengeToken}", request.CodeChallenge, TimeSpan.FromMinutes(5));
     return Results.Ok(new { challengeToken });
-});
+}).RequireRateLimiting("PkceChallengeLimiter");
 
 authGroup.MapPost("/register", async (
     RegisterRequest request,
@@ -99,6 +115,7 @@ authGroup.MapPost("/register", async (
     {
         Email = normalizedEmail,
         DisplayName = request.DisplayName.Trim(),
+        PasswordHash = string.Empty,
         Role = userRole
     };
     user.PasswordHash = passwordHasher.HashPassword(user, request.Password);

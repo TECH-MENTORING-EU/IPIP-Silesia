@@ -12,6 +12,8 @@ Boilerplate aplikacji **.NET 10 + Razor Pages + React** przygotowany jako szkic 
 - rejestracja i logowanie użytkowników (rodzic/uczeń) z PKCE,
 - konta użytkowników przechowywane w bazie SQLite przez Entity Framework Core.
 
+Implementacja PKCE używa standardu `S256` po stronie React i backendu ASP.NET Core.
+
 ## Uruchomienie
 
 ```bash
