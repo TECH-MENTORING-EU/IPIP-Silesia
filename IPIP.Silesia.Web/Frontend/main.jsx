@@ -115,6 +115,23 @@ const programCollections = [
   }
 ];
 
+const roleContent = {
+  parent: {
+    title: "Tryb rodzica",
+    items: [
+      "Podgląd ścieżek szkoleniowych z naciskiem na bezpieczeństwo i stabilne wdrożenie.",
+      "Materiały do rozmów wspierających ucznia przed wejściem na rynek pracy."
+    ]
+  },
+  student: {
+    title: "Tryb ucznia",
+    items: [
+      "Rekomendowane programy startowe i zadania praktyczne do portfolio.",
+      "Skróty do wydarzeń networkingowych oraz ofert pierwszej pracy."
+    ]
+  }
+};
+
 function LandingRoadmap() {
   const [activeStepId, setActiveStepId] = React.useState(roadmapSteps[0].id);
   const activeStep = roadmapSteps.find((step) => step.id === activeStepId) ?? roadmapSteps[0];
@@ -196,6 +213,213 @@ function ProgramsRepository() {
   );
 }
 
+async function createPkcePair() {
+  const bytes = new Uint8Array(32);
+  window.crypto.getRandomValues(bytes);
+  const verifier = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+
+  const data = new TextEncoder().encode(verifier);
+  const digest = await window.crypto.subtle.digest("SHA-256", data);
+  const challengeBytes = new Uint8Array(digest);
+  const challenge = btoa(String.fromCharCode(...challengeBytes))
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+  return { verifier, challenge };
+}
+
+async function postJson(url, payload) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: "Wystąpił błąd żądania." }));
+    throw new Error(error.message ?? "Wystąpił błąd żądania.");
+  }
+
+  if (response.status === 204) {
+    return null;
+  }
+
+  return response.json();
+}
+
+function AuthWidget() {
+  const [mode, setMode] = React.useState("register");
+  const [email, setEmail] = React.useState("");
+  const [password, setPassword] = React.useState("");
+  const [displayName, setDisplayName] = React.useState("");
+  const [role, setRole] = React.useState("student");
+  const [profile, setProfile] = React.useState(null);
+  const [error, setError] = React.useState("");
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  const loadProfile = React.useCallback(async () => {
+    const response = await fetch("/api/auth/me");
+    const data = await response.json();
+    setProfile(data.isAuthenticated ? data : null);
+  }, []);
+
+  React.useEffect(() => {
+    loadProfile().catch(() => setProfile(null));
+  }, [loadProfile]);
+
+  async function handleSubmit(event) {
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      const { verifier, challenge } = await createPkcePair();
+      const challengeResponse = await postJson("/api/auth/pkce/challenge", {
+        codeChallenge: challenge,
+        codeChallengeMethod: "S256"
+      });
+
+      const payload = {
+        email,
+        password,
+        challengeToken: challengeResponse.challengeToken,
+        codeVerifier: verifier
+      };
+
+      if (mode === "register") {
+        payload.displayName = displayName;
+        payload.role = role;
+      }
+
+      await postJson(`/api/auth/${mode}`, payload);
+      await loadProfile();
+      setPassword("");
+    } catch (submissionError) {
+      setError(submissionError.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleLogout() {
+    await postJson("/api/auth/logout", {});
+    setProfile(null);
+  }
+
+  if (profile) {
+    const content = roleContent[profile.role] ?? roleContent.student;
+    return (
+      <div className="glass-card">
+        <p className="card-kicker">Konto aktywne</p>
+        <h3>Witaj, {profile.displayName}</h3>
+        <p className="text-secondary mb-2">{content.title}</p>
+        <ul className="mb-4">
+          {content.items.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+        <button type="button" className="btn btn-outline-light" onClick={handleLogout}>
+          Wyloguj
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="glass-card">
+      <div className="d-flex gap-2 mb-3">
+        <button
+          type="button"
+          className={`btn ${mode === "register" ? "btn-accent" : "btn-outline-light"}`}
+          onClick={() => setMode("register")}
+        >
+          Rejestracja
+        </button>
+        <button
+          type="button"
+          className={`btn ${mode === "login" ? "btn-accent" : "btn-outline-light"}`}
+          onClick={() => setMode("login")}
+        >
+          Logowanie
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit}>
+        <div className="mb-3">
+          <label className="form-label" htmlFor="auth-email">
+            Email
+          </label>
+          <input
+            id="auth-email"
+            type="email"
+            className="form-control"
+            required
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label" htmlFor="auth-password">
+            Hasło
+          </label>
+          <input
+            id="auth-password"
+            type="password"
+            minLength={8}
+            className="form-control"
+            required
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+        </div>
+
+        {mode === "register" ? (
+          <>
+            <div className="mb-3">
+              <label className="form-label" htmlFor="auth-display-name">
+                Imię i nazwisko
+              </label>
+              <input
+                id="auth-display-name"
+                type="text"
+                className="form-control"
+                required
+                value={displayName}
+                onChange={(event) => setDisplayName(event.target.value)}
+              />
+            </div>
+
+            <div className="mb-3">
+              <label className="form-label" htmlFor="auth-role">
+                Typ konta
+              </label>
+              <select
+                id="auth-role"
+                className="form-select"
+                value={role}
+                onChange={(event) => setRole(event.target.value)}
+              >
+                <option value="student">Uczeń</option>
+                <option value="parent">Rodzic</option>
+              </select>
+            </div>
+          </>
+        ) : null}
+
+        {error ? <p className="text-danger">{error}</p> : null}
+
+        <button type="submit" className="btn btn-accent" disabled={isSubmitting}>
+          {isSubmitting ? "Przetwarzanie..." : mode === "register" ? "Załóż konto" : "Zaloguj"}
+        </button>
+      </form>
+    </div>
+  );
+}
+
 function mount(component, selector) {
   const element = document.querySelector(selector);
 
@@ -208,3 +432,4 @@ function mount(component, selector) {
 
 mount(<LandingRoadmap />, "#landing-roadmap-root");
 mount(<ProgramsRepository />, "#programs-repository-root");
+mount(<AuthWidget />, "#auth-widget-root");

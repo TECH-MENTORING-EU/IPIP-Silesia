@@ -8,7 +8,9 @@ Boilerplate aplikacji **.NET 10 + Razor Pages + React** przygotowany jako szkic 
 - repozytorium projektów edukacyjnych,
 - sekcja networkingowa,
 - sekcja z przykładowymi fizycznymi ofertami pracy,
-- React osadzony w aplikacji Razor Pages jako interaktywne widgety.
+- React osadzony w aplikacji Razor Pages jako interaktywne widgety,
+- rejestracja i logowanie użytkowników (rodzic/uczeń) z PKCE,
+- konta użytkowników przechowywane w bazie SQLite przez Entity Framework Core.
 
 ## Uruchomienie
 

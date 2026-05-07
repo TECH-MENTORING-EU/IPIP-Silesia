@@ -43,6 +43,9 @@ CodeCoverage/
 node_modules/
 **/node_modules/
 **/wwwroot/dist/
+*.db
+*.db-shm
+*.db-wal
 
 # MSBuild Binary and Structured Log
 *.binlog

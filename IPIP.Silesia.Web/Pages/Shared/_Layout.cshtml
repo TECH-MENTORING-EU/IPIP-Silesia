@@ -34,6 +34,12 @@
                         <li class="nav-item">
                             <a class="nav-link" asp-area="" asp-page="/Privacy">Polityka prywatności</a>
                         </li>
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            <li class="nav-item">
+                                <span class="nav-link disabled">Zalogowano: @User.Identity.Name (@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value)</span>
+                            </li>
+                        }
                     </ul>
                     <a class="btn btn-accent mt-3 mt-lg-0" asp-area="" asp-page="/Jobs">Zobacz oferty</a>
                 </div>
