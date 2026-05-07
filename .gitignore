@@ -56,3 +56,4 @@ node_modules/
 TestResult.xml
 nunit-*.xml
 /.vs
+/IPIP.Silesia.Web/IPIP.Silesia.Web.csproj.user
