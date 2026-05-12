@@ -35,14 +35,12 @@
             </div>
             <div class="col-lg-5">
                 <div class="glass-card hero-card">
-                    <p class="card-kicker">Motyw przewodni</p>
-                    <h2>Najpierw orientacja i kompetencje. Potem ludzie. Na końcu oferta dopasowana do realiów regionu.</h2>
-                    <ul class="feature-list">
-                        <li>krótkie szkolenia z realnym efektem</li>
-                        <li>projekty uczące współpracy i odpowiedzialności</li>
-                        <li>spotkania z mentorami i pracodawcami</li>
-                        <li>fizyczne oferty pracy oraz ścieżka wdrożeniowa</li>
-                    </ul>
+                    <span class="eyebrow">Edukacja i Rozwój</span>
+                <h2 class="mb-4">Interaktywna Oś Czasu</h2>
+                <script id="programs-data" type="application/json">
+                    @Html.Raw(Json.Serialize(Model.Programs))
+                </script>
+                <div id="programs-timeline-root"></div>
                 </div>
             </div>
         </div>
@@ -88,7 +86,7 @@
     </div>
 </section>
 
-<section class="section-spacing section-soft">
+<section class="section-spacing">
     <div class="container">
         <div class="section-heading">
             <span class="eyebrow">React widget</span>
