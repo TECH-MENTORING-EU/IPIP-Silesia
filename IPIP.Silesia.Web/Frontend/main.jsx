@@ -192,7 +192,7 @@ function ProgramsTimeline({ programs }) {
             top: 0;
             bottom: 0;
             width: 2px;
-            background: rgba(255,255,255,0.2);
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.2) 15%, rgba(255,255,255,0.2) 85%, transparent);
             z-index: 0;
           }
           .timeline-item {
