@@ -25,3 +25,9 @@ Podczas `dotnet build` i `dotnet run` projekt automatycznie buduje frontend Reac
 cd /home/runner/work/IPIP-Silesia/IPIP-Silesia/IPIP.Silesia.Web
 npm run build
 ```
+
+## Uwierzytelnianie i profile kont
+
+- Aplikacja używa ASP.NET Core Identity + Entity Framework (SQLite: `ipip-silesia.db`).
+- Rejestracja pozwala wybrać profil konta: `Rodzic` lub `Uczeń`.
+- Endpoint `GET /api/account/profile` jest chroniony (401 dla niezalogowanych żądań API).

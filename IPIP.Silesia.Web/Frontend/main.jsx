@@ -196,6 +196,52 @@ function ProgramsRepository() {
   );
 }
 
+function AuthStatus() {
+  const [state, setState] = React.useState({ status: "loading", message: "Sprawdzanie sesji..." });
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    fetch("/api/account/profile", { credentials: "include" })
+      .then(async (response) => {
+        if (cancelled) {
+          return;
+        }
+
+        if (response.status === 401) {
+          setState({
+            status: "unauthorized",
+            message: "Aby korzystać z endpointów API, zaloguj się lub utwórz konto rodzica/ucznia."
+          });
+          return;
+        }
+
+        if (!response.ok) {
+          setState({ status: "error", message: "Nie udało się pobrać danych konta." });
+          return;
+        }
+
+        const data = await response.json();
+        setState({
+          status: "authorized",
+          message: `Zalogowano: ${data.email} (${data.profileType}).`
+        });
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setState({ status: "error", message: "Błąd połączenia z API." });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const className = state.status === "authorized" ? "alert alert-success" : "alert alert-secondary";
+  return <div className={className}>{state.message}</div>;
+}
+
 function mount(component, selector) {
   const element = document.querySelector(selector);
 
@@ -206,5 +252,6 @@ function mount(component, selector) {
   createRoot(element).render(component);
 }
 
+mount(<AuthStatus />, "#auth-status-root");
 mount(<LandingRoadmap />, "#landing-roadmap-root");
 mount(<ProgramsRepository />, "#programs-repository-root");
