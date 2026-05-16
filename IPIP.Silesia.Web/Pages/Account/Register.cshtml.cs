@@ -35,7 +35,7 @@ public class RegisterModel(UserManager<ApplicationUser> userManager, SignInManag
         public string ProfileType { get; set; } = UserRole.Student;
     }
 
-    public async Task<IActionResult> OnGetAsync()
+    public IActionResult OnGet()
     {
         if (User.Identity?.IsAuthenticated == true)
         {

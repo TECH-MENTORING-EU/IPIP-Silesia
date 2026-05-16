@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 using IPIP.Silesia.Web.Models;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -28,14 +27,13 @@ public class LoginModel(SignInManager<ApplicationUser> signInManager) : PageMode
         public string Password { get; set; } = string.Empty;
     }
 
-    public async Task<IActionResult> OnGetAsync()
+    public IActionResult OnGet()
     {
         if (User.Identity?.IsAuthenticated == true)
         {
             return RedirectToPage("/Profile");
         }
 
-        await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
         return Page();
     }
 
