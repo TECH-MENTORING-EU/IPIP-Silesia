@@ -6,6 +6,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
+  </ItemGroup>
+
   <Target Name="BuildFrontend" BeforeTargets="Build" Condition="Exists('package.json')">
     <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Command="npm ci" Condition="!Exists('node_modules')" />
     <Exec WorkingDirectory="$(MSBuildProjectDirectory)" Command="npm run build" />

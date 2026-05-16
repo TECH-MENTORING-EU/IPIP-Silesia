@@ -43,6 +43,7 @@ CodeCoverage/
 node_modules/
 **/node_modules/
 **/wwwroot/dist/
+IPIP.Silesia.Web/ipip-silesia.db*
 
 # MSBuild Binary and Structured Log
 *.binlog
