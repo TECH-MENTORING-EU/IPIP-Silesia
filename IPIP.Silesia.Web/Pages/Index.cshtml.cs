@@ -16,8 +16,8 @@ public class IndexModel : PageModel
 
     public List<EducationalProgram> Programs { get; set; } = new();
 
-    public async Task OnGetAsync()
+    public async Task OnGetAsync(string? level)
     {
-        Programs = await _programService.GetAllProgramsAsync();
+        Programs = string.IsNullOrWhiteSpace(level) ? await _programService.GetAllProgramsAsync() : await _programService.GetProgramsByLevelAsync(level);
     }
 }

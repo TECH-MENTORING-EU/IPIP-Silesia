@@ -56,6 +56,70 @@ const roadmapSteps = [
   }
 ];
 
+const repositoryLevels = ["All", "Primary", "Secondary"];
+
+const levelLabels = {
+  All: "Wszystkie",
+  Primary: "Podstawówka",
+  Secondary: "Szkoła średnia"
+};
+
+function normalizeProgram(program) {
+  return {
+    id: program.Id ?? program.id,
+    name: program.Name ?? program.name,
+    description: program.Description ?? program.description,
+    level: program.EducationLevel ?? program.educationLevel,
+    startDate: program.StartDate ?? program.startDate,
+    endDate: program.EndDate ?? program.endDate,
+    url: program.Url ?? program.url ?? null
+  };
+}
+
+function getRepositoryPrograms(programs) {
+  return programs
+    .map(normalizeProgram)
+    .filter((program) => repositoryLevels.includes(program.level))
+    .sort((left, right) => new Date(left.startDate) - new Date(right.startDate));
+}
+
+function formatProgramRange(program) {
+  const options = { month: "short", year: "numeric" };
+  return `${new Date(program.startDate).toLocaleDateString("pl-PL", options)} - ${new Date(program.endDate).toLocaleDateString("pl-PL", options)}`;
+}
+
+function buildProgramsUrl(level, selectedProgramId) {
+  const url = new URL("/Programs", window.location.origin);
+
+  if (level && level !== "All") {
+    url.searchParams.set("level", level);
+  }
+
+  if (selectedProgramId) {
+    url.searchParams.set("selected", selectedProgramId);
+  }
+
+  return `${url.pathname}${url.search}`;
+}
+
+function orderPrograms(programs, selectedProgramId) {
+  if (!selectedProgramId) {
+    return programs;
+  }
+
+  return [...programs].sort((left, right) => {
+    if (left.id === selectedProgramId) {
+      return -1;
+    }
+
+    if (right.id === selectedProgramId) {
+      return 1;
+    }
+
+    return new Date(left.startDate) - new Date(right.startDate);
+  });
+}
+
 function LandingRoadmap() {
   const [activeStepId, setActiveStepId] = React.useState(roadmapSteps[0].id);
   const activeStep = roadmapSteps.find((step) => step.id === activeStepId) ?? roadmapSteps[0];
@@ -96,150 +160,178 @@ function LandingRoadmap() {
   );
 }
 
-function ProgramsTimeline({ programs }) {
-  console.log("ProgramsTimeline received programs:", programs);
-  const [filter, setFilter] = React.useState("Primary");
-
-  const filteredPrograms = programs.filter(p => 
-    (p.EducationLevel || p.educationLevel) === filter
-  );
-  console.log("Filtered programs:", filteredPrograms);
-
-    return (
-      <div className="timeline-shell">
-        <div className="timeline-filters mb-4">
-          <button 
-            className={`filter-pill ${filter === "Primary" ? "active" : ""}`}
-            onClick={() => setFilter("Primary")}
-          >
-            Szkoła podstawowa
-          </button>
-          <button 
-            className={`filter-pill ${filter === "Secondary" ? "active" : ""}`}
-            onClick={() => setFilter("Secondary")}
-          >
-            Szkoła średnia
-          </button>
-          <button 
-            className={`filter-pill ${filter === "Parents" ? "active" : ""}`}
-            onClick={() => setFilter("Parents")}
-          >
-            Dla rodziców
-          </button>
-        </div>
-        <div className="timeline-container">
-          <div className="timeline-content-wrapper">
-            {filteredPrograms.length > 0 ? (
-              filteredPrograms.map((program, index) => (
-                <div key={program.Id || program.id} className="timeline-item">
-                  <div className="timeline-content">
-                    <span className="timeline-date">
-                      {new Date(program.StartDate || program.startDate).toLocaleDateString('pl-PL', { month: 'short', year: 'numeric' })} 
-                      - {new Date(program.EndDate || program.endDate).toLocaleDateString('pl-PL', { month: 'short', year: 'numeric' })}
-                    </span>
-                    <h3>{program.Name || program.name}</h3>
-                    <p>{program.Description || program.description}</p>
-                    {(program.Url || program.url) && <a href={program.Url || program.url} className="timeline-link">Więcej</a>}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center p-4" style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem' }}>
-                Brak programów dla wybranej kategorii.
-              </div>
-            )}
-          </div>
-        </div>
-        <style>{`
-          .timeline-shell { font-family: sans-serif; color: inherit; }
-          .timeline-filters { display: flex; gap: 0.5rem; justify-content: center; }
-          .filter-pill { 
-            padding: 0.3rem 1rem; 
-            border-radius: 2rem; 
-            border: 1px solid rgba(255,255,255,0.3); 
-            background: rgba(255,255,255,0.1); 
-            color: inherit;
-            cursor: pointer; 
-            transition: all 0.3s;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-          }
-          .filter-pill.active { background: #fff; color: #000; border-color: #fff; }
-          .timeline-container { 
-            position: relative; 
-            max-width: 100%; 
-            margin: 0 auto; 
-            padding: 1rem 0 0 0;
-            height: 300px;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-          }
-          .timeline-container::-webkit-scrollbar { display: none; }
-          .timeline-content-wrapper {
-            position: relative;
-            padding-left: 1.5rem;
-            padding-bottom: 1rem;
-          }
-          .timeline-content-wrapper::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.2) 15%, rgba(255,255,255,0.2) 85%, transparent);
-            z-index: 0;
-          }
-          .timeline-item {
-            position: relative;
-            margin-bottom: 1.5rem;
-            width: 100%;
-            padding-left: 1.5rem;
-            box-sizing: border-box;
-            text-align: left;
-            z-index: 1;
-          }
-          .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -1.5rem;
-            top: 1.5rem;
-            width: 1.5rem;
-            height: 2px;
-            background: rgba(255,255,255,0.2);
-            z-index: -1;
-          }
-          .timeline-content {
-            background: rgba(255,255,255,0.05);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(4px);
-            transition: all 0.2s ease;
-            cursor: default;
-          }
-          .timeline-content:hover {
-            background: rgba(255,255,255,0.12);
-            border-color: rgba(255,255,255,0.4);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-          }
-          .timeline-date { font-size: 0.75rem; color: rgba(255,255,255,0.6); font-weight: bold; }
-          .timeline-content h3 { font-size: 1rem; margin: 0.2rem 0; color: #fff; }
-          .timeline-content p { font-size: 0.85rem; margin: 0; color: rgba(255,255,255,0.8); }
-          .timeline-link { display: inline-block; margin-top: 0.5rem; color: #fff; text-decoration: underline; font-size: 0.8rem; font-weight: bold; }
-        `}</style>
+function TimelineLevel({ level, programs }) {
+  return (
+    <section className={`landing-timeline-group ${level.toLowerCase()}`}>
+      <div className="landing-timeline-group-heading">
+        <h2>{levelLabels[level]}</h2>
       </div>
-    );
-
-
+      <div className="landing-timeline-items">
+        {programs.map((program, index) => (
+          <button
+            key={program.id}
+            type="button"
+            className={`timeline-program-card ${index % 2 === 0 ? "is-top" : "is-bottom"}`}
+            onClick={() => {
+              window.location.href = buildProgramsUrl(level, program.id);
+            }}
+          >
+            <span className="timeline-program-range">{formatProgramRange(program)}</span>
+            <strong>{program.name}</strong>
+            <span>{program.description}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
 }
 
-function mount(component, selector, props = {}) {
+function ProgramsTimeline({ programs }) {
+  const repositoryPrograms = React.useMemo(() => getRepositoryPrograms(programs), [programs]);
+  const primaryPrograms = repositoryPrograms.filter((program) => program.level === "Primary");
+  const secondaryPrograms = repositoryPrograms.filter((program) => program.level === "Secondary");
+
+  return (
+    <div className="landing-timeline-shell">
+      <div className="landing-timeline-board">
+        <div className="landing-timeline-divider" aria-hidden="true"></div>
+        <TimelineLevel level="Primary" programs={primaryPrograms} />
+        <TimelineLevel level="Secondary" programs={secondaryPrograms} />
+      </div>
+    </div>
+  );
+}
+
+function ProgramsRepository({ programs, initialLevel, initialSelectedProgramId }) {
+  const repositoryPrograms = React.useMemo(() => getRepositoryPrograms(programs), [programs]);
+  const safeInitialLevel = repositoryLevels.includes(initialLevel) ? initialLevel : "All";
+  const initialSelectedProgram = repositoryPrograms.find((program) => program.id === initialSelectedProgramId) ?? null;
+  const [activeLevel, setActiveLevel] = React.useState(initialSelectedProgram?.level ?? safeInitialLevel);
+  const [selectedProgramId, setSelectedProgramId] = React.useState(initialSelectedProgram?.id ?? null);
+
+  const selectedProgram = repositoryPrograms.find((program) => program.id === selectedProgramId) ?? null;
+  const selectedLevel = selectedProgram?.level ?? null;
+
+  React.useEffect(() => {
+    const url = buildProgramsUrl(selectedProgram?.level ?? activeLevel, selectedProgram?.id ?? null);
+    window.history.replaceState({}, "", url);
+  }, [activeLevel, selectedProgram]);
+
+  const filteredPrograms = repositoryPrograms.filter(
+    (program) => activeLevel === "All" || program.level === activeLevel
+  );
+
+  const selectedPrograms = selectedLevel
+    ? orderPrograms(
+        repositoryPrograms.filter((program) => program.level === selectedLevel),
+        selectedProgramId
+      )
+    : [];
+
+  return (
+    <div className="programs-repository-shell">
+      <div className="programs-repository-toolbar">
+        <div className="filter-pills repository-filter-pills">
+          {repositoryLevels.map((level) => {
+            const isActive = selectedProgram ? selectedLevel === level : activeLevel === level;
+
+            return (
+            <button
+              key={level}
+              type="button"
+              className={`filter-pill ${isActive ? "active" : ""}`}
+              onClick={() => {
+                setSelectedProgramId(null);
+                setActiveLevel(level);
+              }}
+            >
+              <strong>{levelLabels[level]}</strong>
+              <span>{level === "All" ? "pełny katalog programów" : `programy: ${levelLabels[level].toLowerCase()}`}</span>
+            </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {selectedProgram ? (
+        <div className="repository-selection-view">
+          <div className="repository-selection-copy">
+            <span className="badge-soft">Wybrany program</span>
+            <h2>{levelLabels[selectedLevel]}</h2>
+            <p>
+              Wybrany program znajduje się na początku listy. Pozostałe projekty z tej samej sekcji możesz przewijać poniżej.
+            </p>
+          </div>
+          <div className="repository-scroll-list">
+            {selectedPrograms.map((program, index) => (
+              <article
+                key={program.id}
+                className={`repository-program-card ${index === 0 ? "is-featured" : ""}`}
+              >
+                <div className="repository-program-header">
+                  <div>
+                    <p className="card-kicker mb-2">{levelLabels[program.level]}</p>
+                    <h3>{program.name}</h3>
+                  </div>
+                  <span className="repository-program-range">{formatProgramRange(program)}</span>
+                </div>
+                <p>{program.description}</p>
+                <div className="repository-program-actions">
+                  {program.url ? (
+                    <a className="btn btn-link p-0" href={program.url}>
+                      Zobacz więcej
+                    </a>
+                  ) : null}
+                  {index !== 0 ? (
+                    <button
+                      type="button"
+                      className="btn btn-link p-0"
+                      onClick={() => setSelectedProgramId(program.id)}
+                    >
+                      Pokaż jako pierwszy
+                    </button>
+                  ) : null}
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="repository-grid">
+          {filteredPrograms.map((program) => (
+            <article key={program.id} className="repository-program-card">
+              <p className="card-kicker mb-2">{levelLabels[program.level]}</p>
+              <div className="repository-program-header">
+                <h3>{program.name}</h3>
+                <span className="repository-program-range">{formatProgramRange(program)}</span>
+              </div>
+              <p>{program.description}</p>
+              <div className="repository-program-actions">
+                <button
+                  type="button"
+                  className="btn btn-link p-0"
+                  onClick={() => {
+                    setSelectedProgramId(program.id);
+                    setActiveLevel(program.level);
+                  }}
+                >
+                  Pokaż w sekcji
+                </button>
+                {program.url ? (
+                  <a className="btn btn-link p-0" href={program.url}>
+                    Zobacz więcej
+                  </a>
+                ) : null}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function mount(component, selector) {
   const element = document.querySelector(selector);
 
   if (!element) {
@@ -249,13 +341,27 @@ function mount(component, selector, props = {}) {
   createRoot(element).render(component);
 }
 
-// Mount Roadmap
+function readJsonData(id) {
+  const element = document.getElementById(id);
+  return element?.textContent ? JSON.parse(element.textContent) : [];
+}
+
 mount(<LandingRoadmap />, "#landing-roadmap-root");
 
-// Mount Timeline with data from script tag
 const timelineRoot = document.querySelector("#programs-timeline-root");
 if (timelineRoot) {
-  const dataElement = document.getElementById("programs-data");
-  const programs = dataElement ? JSON.parse(dataElement.textContent) : [];
-  createRoot(timelineRoot).render(<ProgramsTimeline programs={programs} />);
+  createRoot(timelineRoot).render(<ProgramsTimeline programs={readJsonData("programs-data")} />);
+}
+
+const repositoryRoot = document.querySelector("#programs-repository-root");
+if (repositoryRoot) {
+  const initialSelectedProgramId = Number.parseInt(repositoryRoot.dataset.selectedProgramId ?? "", 10);
+
+  createRoot(repositoryRoot).render(
+    <ProgramsRepository
+      programs={readJsonData("programs-repository-data")}
+      initialLevel={repositoryRoot.dataset.initialLevel || "All"}
+      initialSelectedProgramId={Number.isNaN(initialSelectedProgramId) ? null : initialSelectedProgramId}
+    />
+  );
 }

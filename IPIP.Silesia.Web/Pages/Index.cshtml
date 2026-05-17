@@ -4,86 +4,25 @@
     ViewData["Title"] = "Start";
 }
 
-<section class="hero-section">
-    <div class="container">
-        <div class="row align-items-center g-5">
-            <div class="col-lg-7">
-                <span class="eyebrow">Ścieżka od matury do pierwszej pracy</span>
-                <h1 class="display-3 fw-bold mt-3">Jasna recepta, jak wejść na rodzimy rynek pracy bez chaosu.</h1>
-                <p class="lead text-secondary mt-4">
-                    IPIP Silesia to szkic platformy, która łączy edukację, ludzi i konkretne oferty pracy fizycznej.
-                    Zbieramy programy szkoleniowe, projekty kompetencyjne, networking i ścieżkę „z projektu do pracy”.
-                </p>
-                <div class="d-flex flex-column flex-sm-row gap-3 mt-4">
-                    <a class="btn btn-accent btn-lg" asp-page="/Programs">Przeglądaj programy</a>
-                    <a class="btn btn-outline-light btn-lg" asp-page="/Jobs">Zobacz oferty pracy</a>
-                </div>
-                <div class="hero-stats mt-5">
-                    <div>
-                        <strong>12+</strong>
-                        <span>mockupowych ścieżek wejścia</span>
-                    </div>
-                    <div>
-                        <strong>3 filary</strong>
-                        <span>edukacja, relacje, zatrudnienie</span>
-                    </div>
-                    <div>
-                        <strong>lokalnie</strong>
-                        <span>Śląsk i miasta ościenne</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-5">
-                <div class="glass-card hero-card">
-                    <span class="eyebrow">Edukacja i Rozwój</span>
-                <h2 class="mb-4">Interaktywna Oś Czasu</h2>
-                <script id="programs-data" type="application/json">
-                    @Html.Raw(Json.Serialize(Model.Programs))
-                </script>
-                <div id="programs-timeline-root"></div>
-                </div>
-            </div>
+<section class="timeline-landing-section">
+    <div class="container timeline-landing-intro">
+        <span class="eyebrow">Projekty edukacyjne</span>
+        <h1>Podstawówka i szkoła średnia na jednej osi czasu.</h1>
+        <p>
+            Kliknij wybrany program, aby przejść do listy projektów edukacyjnych w odpowiedniej sekcji.
+            Widok otworzy wskazany program na początku listy.
+        </p>
+        <div class="d-flex flex-column flex-sm-row gap-3 mt-4">
+            <a class="btn btn-accent btn-lg" asp-page="/Programs">Zobacz wszystkie programy</a>
+            <a class="btn btn-outline-primary btn-lg" asp-page="/Jobs">Przejdź do ofert pracy</a>
         </div>
     </div>
-</section>
 
-<section class="section-spacing">
-    <div class="container">
-        <div class="section-heading">
-            <span class="eyebrow">Co znajdziesz na stronie</span>
-            <h2>Prosty szkielet pod dalszy rozwój produktu</h2>
-        </div>
-        <div class="row g-4 mt-1">
-            <div class="col-md-6 col-xl-3">
-                <article class="info-card h-100">
-                    <p class="card-kicker">01</p>
-                    <h3>Landing page</h3>
-                    <p>Wyraźny cel projektu, przewodnik „co zrobić po maturze” i szybkie wejście do kluczowych sekcji.</p>
-                </article>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <article class="info-card h-100">
-                    <p class="card-kicker">02</p>
-                    <h3>Repozytorium programów</h3>
-                    <p>Programy szkoleniowe i kompetencyjne opisane jak katalog działań do uruchomienia.</p>
-                </article>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <article class="info-card h-100">
-                    <p class="card-kicker">03</p>
-                    <h3>Networking</h3>
-                    <p>Formaty spotkań, społeczność, kontakt z mentorami i miejsca do poznawania ludzi z branży.</p>
-                </article>
-            </div>
-            <div class="col-md-6 col-xl-3">
-                <article class="info-card h-100">
-                    <p class="card-kicker">04</p>
-                    <h3>Praca</h3>
-                    <p>Fizyczne oferty pracy i scenariusz przejścia od praktycznego projektu do zatrudnienia.</p>
-                </article>
-            </div>
-        </div>
-    </div>
+    <script id="programs-data" type="application/json">
+        @Html.Raw(Json.Serialize(Model.Programs))
+    </script>
+
+    <div id="programs-timeline-root"></div>
 </section>
 
 <section class="section-spacing">
