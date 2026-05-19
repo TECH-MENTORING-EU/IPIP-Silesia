@@ -1,50 +1,28 @@
 @page
+@model ProgramsModel
 @{
     ViewData["Title"] = "Projekty edukacyjne";
 }
 
-<section class="subpage-hero">
+<section class="subpage-hero programs-page-hero">
     <div class="container">
         <span class="eyebrow">Repozytorium projektów edukacyjnych</span>
-        <h1>Programy szkoleniowe i kompetencyjne w jednym miejscu.</h1>
+        <h1>Podstawówka i szkoła średnia w jednym katalogu.</h1>
         <p>
-            Ta sekcja jest przygotowana jako katalog treści do dalszego rozwinięcia.
-            Zawiera dwa główne nurty: szybkie programy szkoleniowe oraz programy rozwijające kompetencje potrzebne w pracy.
+            Wybierz poziom edukacji albo przejdź z osi czasu na stronie głównej.
+            Jeśli wejdziesz z wybranego programu, pokażemy go na początku listy w odpowiedniej sekcji.
         </p>
     </div>
 </section>
 
 <section class="section-spacing pt-0">
     <div class="container">
-        <div class="row g-4 mb-5">
-            <div class="col-lg-4">
-                <article class="info-card h-100">
-                    <p class="card-kicker">Programy szkoleniowe</p>
-                    <h2 class="h4">Nastawione na szybki start</h2>
-                    <p>Praktyczne moduły skoncentrowane na wejściu do pracy fizycznej, operacyjnej lub pomocniczej.</p>
-                </article>
-            </div>
-            <div class="col-lg-4">
-                <article class="info-card h-100">
-                    <p class="card-kicker">Programy kompetencyjne</p>
-                    <h2 class="h4">Budujące gotowość zawodową</h2>
-                    <p>Nawyki, komunikacja i odpowiedzialność potrzebne, by nie tylko dostać pracę, ale też się w niej utrzymać.</p>
-                </article>
-            </div>
-            <div class="col-lg-4">
-                <article class="info-card h-100">
-                    <p class="card-kicker">Boilerplate</p>
-                    <h2 class="h4">Miejsce na przyszłe integracje</h2>
-                    <p>Kolejny etap może dodać filtry, CMS, logowanie, zapisy na ścieżki i statusy postępu uczestnika.</p>
-                </article>
-            </div>
-        </div>
+        <script id="programs-repository-data" type="application/json">
+            @Html.Raw(Json.Serialize(Model.Programs))
+        </script>
 
-        <div class="section-heading mb-4">
-            <span class="eyebrow">React widget</span>
-            <h2>Przykładowy eksplorator programów</h2>
-            <p>To mockup pokazujący, jak można przełączać typy programów bez przeładowywania całej strony.</p>
-        </div>
-        <div id="programs-repository-root"></div>
+        <div id="programs-repository-root"
+             data-initial-level="@Model.InitialLevelFilter"
+             data-selected-program-id="@Model.SelectedProgramId"></div>
     </div>
 </section>

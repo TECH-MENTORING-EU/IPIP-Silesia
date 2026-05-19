@@ -56,64 +56,69 @@ const roadmapSteps = [
   }
 ];
 
-const programCollections = [
-  {
-    id: "szkoleniowe",
-    label: "Programy szkoleniowe",
-    description: "Szybkie ścieżki wejścia do pracy operacyjnej i fizycznej.",
-    programs: [
-      {
-        title: "Start na magazynie",
-        type: "Operacyjny",
-        length: "3 tygodnie",
-        mode: "Warsztaty + shadowing",
-        summary: "Bezpieczeństwo, podstawy kompletacji, praca ze skanerem i rytm zmiany."
-      },
-      {
-        title: "Produkcja bez stresu",
-        type: "Wdrożeniowy",
-        length: "2 tygodnie",
-        mode: "Ćwiczenia stanowiskowe",
-        summary: "Czytanie prostych instrukcji, jakość, tempo pracy i zgłaszanie problemów."
-      },
-      {
-        title: "Logistyka pierwszego kroku",
-        type: "Branżowy",
-        length: "4 tygodnie",
-        mode: "Projekt + praktyka",
-        summary: "Podstawy przepływu materiału, oznaczenia, organizacja stref i odpowiedzialność."
-      }
-    ]
-  },
-  {
-    id: "kompetencyjne",
-    label: "Programy kompetencyjne",
-    description: "Umiejętności miękkie potrzebne do utrzymania pierwszej pracy.",
-    programs: [
-      {
-        title: "Punktualność i odpowiedzialność",
-        type: "Nawykowy",
-        length: "5 spotkań",
-        mode: "Coaching grupowy",
-        summary: "Praca z rytmem tygodnia, komunikowaniem nieobecności i planowaniem dojazdów."
-      },
-      {
-        title: "Komunikacja na zmianie",
-        type: "Zespołowy",
-        length: "4 spotkania",
-        mode: "Symulacje",
-        summary: "Jak prosto zadawać pytania, zgłaszać błędy i współpracować z liderem."
-      },
-      {
-        title: "Od projektu do zatrudnienia",
-        type: "Przejściowy",
-        length: "6 tygodni",
-        mode: "Mentoring + portfolio",
-        summary: "Domknięcie mini-projektu, opis efektu i przygotowanie do pierwszej rozmowy."
-      }
-    ]
+const repositoryLevels = ["All", "Primary", "Secondary"];
+
+const levelLabels = {
+  All: "Wszystkie",
+  Primary: "Podstawówka",
+  Secondary: "Szkoła średnia"
+};
+
+function normalizeProgram(program) {
+  return {
+    id: program.Id ?? program.id,
+    name: program.Name ?? program.name,
+    description: program.Description ?? program.description,
+    level: program.EducationLevel ?? program.educationLevel,
+    startDate: program.StartDate ?? program.startDate,
+    endDate: program.EndDate ?? program.endDate,
+    url: program.Url ?? program.url ?? null
+  };
+}
+
+function getRepositoryPrograms(programs) {
+  return programs
+    .map(normalizeProgram)
+    .filter((program) => repositoryLevels.includes(program.level))
+    .sort((left, right) => new Date(left.startDate) - new Date(right.startDate));
+}
+
+function formatProgramRange(program) {
+  const options = { month: "short", year: "numeric" };
+  return `${new Date(program.startDate).toLocaleDateString("pl-PL", options)} - ${new Date(program.endDate).toLocaleDateString("pl-PL", options)}`;
+}
+
+function buildProgramsUrl(level, selectedProgramId) {
+  const url = new URL("/Programs", window.location.origin);
+
+  if (level && level !== "All") {
+    url.searchParams.set("level", level);
   }
-];
+
+  if (selectedProgramId) {
+    url.searchParams.set("selected", selectedProgramId);
+  }
+
+  return `${url.pathname}${url.search}`;
+}
+
+function orderPrograms(programs, selectedProgramId) {
+  if (!selectedProgramId) {
+    return programs;
+  }
+
+  return [...programs].sort((left, right) => {
+    if (left.id === selectedProgramId) {
+      return -1;
+    }
+
+    if (right.id === selectedProgramId) {
+      return 1;
+    }
+
+    return new Date(left.startDate) - new Date(right.startDate);
+  });
+}
 
 function LandingRoadmap() {
   const [activeStepId, setActiveStepId] = React.useState(roadmapSteps[0].id);
@@ -155,43 +160,173 @@ function LandingRoadmap() {
   );
 }
 
-function ProgramsRepository() {
-  const [activeCollectionId, setActiveCollectionId] = React.useState(programCollections[0].id);
-  const activeCollection =
-    programCollections.find((collection) => collection.id === activeCollectionId) ?? programCollections[0];
+function TimelineLevel({ level, programs }) {
+  return (
+    <section className={`landing-timeline-group ${level.toLowerCase()}`}>
+      <div className="landing-timeline-group-heading">
+        <h2>{levelLabels[level]}</h2>
+      </div>
+      <div className="landing-timeline-items">
+        {programs.map((program, index) => (
+          <button
+            key={program.id}
+            type="button"
+            className={`timeline-program-card ${index % 2 === 0 ? "is-top" : "is-bottom"}`}
+            onClick={() => {
+              window.location.href = buildProgramsUrl(level, program.id);
+            }}
+          >
+            <span className="timeline-program-range">{formatProgramRange(program)}</span>
+            <strong>{program.name}</strong>
+            <span>{program.description}</span>
+          </button>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function ProgramsTimeline({ programs }) {
+  const repositoryPrograms = React.useMemo(() => getRepositoryPrograms(programs), [programs]);
+  const primaryPrograms = repositoryPrograms.filter((program) => program.level === "Primary");
+  const secondaryPrograms = repositoryPrograms.filter((program) => program.level === "Secondary");
 
   return (
-    <div className="programs-shell">
-      <div className="programs-grid">
-        <div className="filter-pills">
-          {programCollections.map((collection) => (
+    <div className="landing-timeline-shell">
+      <div className="landing-timeline-board">
+        <div className="landing-timeline-divider" aria-hidden="true"></div>
+        <TimelineLevel level="Primary" programs={primaryPrograms} />
+        <TimelineLevel level="Secondary" programs={secondaryPrograms} />
+      </div>
+    </div>
+  );
+}
+
+function ProgramsRepository({ programs, initialLevel, initialSelectedProgramId }) {
+  const repositoryPrograms = React.useMemo(() => getRepositoryPrograms(programs), [programs]);
+  const safeInitialLevel = repositoryLevels.includes(initialLevel) ? initialLevel : "All";
+  const initialSelectedProgram = repositoryPrograms.find((program) => program.id === initialSelectedProgramId) ?? null;
+  const [activeLevel, setActiveLevel] = React.useState(initialSelectedProgram?.level ?? safeInitialLevel);
+  const [selectedProgramId, setSelectedProgramId] = React.useState(initialSelectedProgram?.id ?? null);
+
+  const selectedProgram = repositoryPrograms.find((program) => program.id === selectedProgramId) ?? null;
+  const selectedLevel = selectedProgram?.level ?? null;
+
+  React.useEffect(() => {
+    const url = buildProgramsUrl(selectedProgram?.level ?? activeLevel, selectedProgram?.id ?? null);
+    window.history.replaceState({}, "", url);
+  }, [activeLevel, selectedProgram]);
+
+  const filteredPrograms = repositoryPrograms.filter(
+    (program) => activeLevel === "All" || program.level === activeLevel
+  );
+
+  const selectedPrograms = selectedLevel
+    ? orderPrograms(
+        repositoryPrograms.filter((program) => program.level === selectedLevel),
+        selectedProgramId
+      )
+    : [];
+
+  return (
+    <div className="programs-repository-shell">
+      <div className="programs-repository-toolbar">
+        <div className="filter-pills repository-filter-pills">
+          {repositoryLevels.map((level) => {
+            const isActive = selectedProgram ? selectedLevel === level : activeLevel === level;
+
+            return (
             <button
-              key={collection.id}
+              key={level}
               type="button"
-              className={`filter-pill${collection.id === activeCollection.id ? " active" : ""}`}
-              onClick={() => setActiveCollectionId(collection.id)}
+              className={`filter-pill ${isActive ? "active" : ""}`}
+              onClick={() => {
+                setSelectedProgramId(null);
+                setActiveLevel(level);
+              }}
             >
-              <strong>{collection.label}</strong>
-              <span>{collection.description}</span>
+              <strong>{levelLabels[level]}</strong>
+              <span>{level === "All" ? "pełny katalog programów" : `programy: ${levelLabels[level].toLowerCase()}`}</span>
             </button>
-          ))}
+            );
+          })}
         </div>
-        <div>
-          <div className="programs-list">
-            {activeCollection.programs.map((program) => (
-              <article key={program.title} className="program-card">
-                <span className="badge-soft">{program.type}</span>
-                <h3 className="mt-3">{program.title}</h3>
-                <p className="mt-2 mb-0">{program.summary}</p>
-                <div className="program-meta">
-                  <span>{program.length}</span>
-                  <span>{program.mode}</span>
+      </div>
+
+      {selectedProgram ? (
+        <div className="repository-selection-view">
+          <div className="repository-selection-copy">
+            <span className="badge-soft">Wybrany program</span>
+            <h2>{levelLabels[selectedLevel]}</h2>
+            <p>
+              Wybrany program znajduje się na początku listy. Pozostałe projekty z tej samej sekcji możesz przewijać poniżej.
+            </p>
+          </div>
+          <div className="repository-scroll-list">
+            {selectedPrograms.map((program, index) => (
+              <article
+                key={program.id}
+                className={`repository-program-card ${index === 0 ? "is-featured" : ""}`}
+              >
+                <div className="repository-program-header">
+                  <div>
+                    <p className="card-kicker mb-2">{levelLabels[program.level]}</p>
+                    <h3>{program.name}</h3>
+                  </div>
+                  <span className="repository-program-range">{formatProgramRange(program)}</span>
+                </div>
+                <p>{program.description}</p>
+                <div className="repository-program-actions">
+                  {program.url ? (
+                    <a className="btn btn-link p-0" href={program.url}>
+                      Zobacz więcej
+                    </a>
+                  ) : null}
+                  {index !== 0 ? (
+                    <button
+                      type="button"
+                      className="btn btn-link p-0"
+                      onClick={() => setSelectedProgramId(program.id)}
+                    >
+                      Pokaż jako pierwszy
+                    </button>
+                  ) : null}
                 </div>
               </article>
             ))}
           </div>
         </div>
-      </div>
+      ) : (
+        <div className="repository-grid">
+          {filteredPrograms.map((program) => (
+            <article key={program.id} className="repository-program-card">
+              <p className="card-kicker mb-2">{levelLabels[program.level]}</p>
+              <div className="repository-program-header">
+                <h3>{program.name}</h3>
+                <span className="repository-program-range">{formatProgramRange(program)}</span>
+              </div>
+              <p>{program.description}</p>
+              <div className="repository-program-actions">
+                <button
+                  type="button"
+                  className="btn btn-link p-0"
+                  onClick={() => {
+                    setSelectedProgramId(program.id);
+                    setActiveLevel(program.level);
+                  }}
+                >
+                  Pokaż w sekcji
+                </button>
+                {program.url ? (
+                  <a className="btn btn-link p-0" href={program.url}>
+                    Zobacz więcej
+                  </a>
+                ) : null}
+              </div>
+            </article>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -206,5 +341,27 @@ function mount(component, selector) {
   createRoot(element).render(component);
 }
 
+function readJsonData(id) {
+  const element = document.getElementById(id);
+  return element?.textContent ? JSON.parse(element.textContent) : [];
+}
+
 mount(<LandingRoadmap />, "#landing-roadmap-root");
-mount(<ProgramsRepository />, "#programs-repository-root");
+
+const timelineRoot = document.querySelector("#programs-timeline-root");
+if (timelineRoot) {
+  createRoot(timelineRoot).render(<ProgramsTimeline programs={readJsonData("programs-data")} />);
+}
+
+const repositoryRoot = document.querySelector("#programs-repository-root");
+if (repositoryRoot) {
+  const initialSelectedProgramId = Number.parseInt(repositoryRoot.dataset.selectedProgramId ?? "", 10);
+
+  createRoot(repositoryRoot).render(
+    <ProgramsRepository
+      programs={readJsonData("programs-repository-data")}
+      initialLevel={repositoryRoot.dataset.initialLevel || "All"}
+      initialSelectedProgramId={Number.isNaN(initialSelectedProgramId) ? null : initialSelectedProgramId}
+    />
+  );
+}
